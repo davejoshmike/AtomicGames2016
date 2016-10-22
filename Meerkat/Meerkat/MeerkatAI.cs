@@ -62,7 +62,13 @@ namespace MeerkatAI
             log.Info("Timer started with " + (meerkatPlayer.Time - 500));
 
             // Select a move
-            meerkatPlayer.move();
+            try
+            {
+                meerkatPlayer.move();
+            } catch (Exception e)
+            {
+                log.Error(e);
+            }
         }
 
         // Main game logic
@@ -81,6 +87,9 @@ namespace MeerkatAI
             // Choose a random available move
             this.bestMove = chooseRandomMove(board);
 
+            // Initialize best value to negative infinity
+            int bestValue = -INFINITY;
+
             // Look at each possible move
             var validMoves = board.ValidMoves();
             foreach(int move in validMoves)
@@ -88,7 +97,10 @@ namespace MeerkatAI
                 // Min max evaluation
                 var newBoard = board.Move(move);
                 int value = minMax(newBoard, DEPTH, true); // Should we always start as max, or is that dependent on which player is up?
-                this.bestMove = Math.Max(this.bestMove, value);
+                if (value > bestValue) {
+                    bestValue = value;
+                    this.bestMove = move;
+                }
             }
 
             log.Info("Meerkat chose move: " + this.bestMove);
@@ -154,6 +166,7 @@ namespace MeerkatAI
             {
                 if (meerkatPlayer.bestMove != -1)
                 {
+                    log.Info("Timer interrupted player: Chose " + meerkatPlayer.bestMove);
                     Environment.Exit(meerkatPlayer.bestMove);
                 }
 
@@ -166,7 +179,7 @@ namespace MeerkatAI
                     nextMove = chooseRandomMove(board);
                 }
 
-                log.Info("Time expired.");
+                log.Info("Time expired: Chose " + nextMove);
                 Environment.Exit(nextMove);
             };
         }
