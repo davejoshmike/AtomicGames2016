@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,18 +9,41 @@ namespace MeerkatAI
 {
     class Board
     {
+        private static readonly log4net.ILog log =
+    log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private int[,] myBoard;
         public Board(string board, int player)
         {
+            try
+            {
+                myBoard = JsonConvert.DeserializeObject<int[,]>(board);
+                log.Debug(myBoard.ToString());
+                log.Debug("Parsed board successfully");
+            }
+            catch (Exception e)
+            {
+                log.Error(e);
+            }
 
+            
         }
 
         public int[] ValidMoves()
         {
-            return null;
+            var list = new List<int>();
+            for (int i = 0; i < 7; i++)
+            {
+                if (myBoard[0, i] == 0)
+                {
+                    list.Add(i);
+                }
+            }
+            return list.ToArray();
         }
 
         public int Heuristic()
         {
+            //Defense has a higher heuristic
             return -1;
         }
 
@@ -43,5 +67,9 @@ namespace MeerkatAI
             return null;
         }
 
+        private bool DiagonalGoal()
+        {
+            return false;
+        }
     }
 }
