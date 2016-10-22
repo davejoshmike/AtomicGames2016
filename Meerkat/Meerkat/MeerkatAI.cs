@@ -92,14 +92,18 @@ namespace MeerkatAI
 
             // Look at each possible move
             var validMoves = board.ValidMoves();
-            foreach(int move in validMoves)
+            if (validMoves != null)
             {
-                // Min max evaluation
-                var newBoard = board.Move(move);
-                int value = minMax(newBoard, DEPTH, true); // Should we always start as max, or is that dependent on which player is up?
-                if (value > bestValue) {
-                    bestValue = value;
-                    this.bestMove = move;
+                foreach (int move in validMoves)
+                {
+                    // Min max evaluation
+                    var newBoard = board.Move(move);
+                    int value = minMax(newBoard, DEPTH, true);
+                    if (value > bestValue)
+                    {
+                        bestValue = value;
+                        this.bestMove = move;
+                    }
                 }
             }
 
@@ -146,10 +150,13 @@ namespace MeerkatAI
             {
                 // Get the board created by this move
                 var newBoard = board.Move(move);
-                // Recursively perform minimax on this board
-                int value = minMax(newBoard, depth - 1, !isMax);
-                // Update the best value if this board is better / worse
-                bestValue = isMax ? Math.Max(value, bestValue) : Math.Min(value, bestValue);
+                if (newBoard != null)
+                {
+                    // Recursively perform minimax on this board
+                    int value = minMax(newBoard, depth - 1, !isMax);
+                    // Update the best value if this board is better / worse
+                    bestValue = isMax ? Math.Max(value, bestValue) : Math.Min(value, bestValue);
+                }
             }
 
             return bestValue;
