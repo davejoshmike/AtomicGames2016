@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CommandLine;
+using CommandLine.Text;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,20 +14,31 @@ namespace MeerkatAI
         private static readonly log4net.ILog log =
     log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-
         static void Main(string[] args)
         {
+            String board = "";
+            String player = "";
+            int timeMillis = 0;
+
+            var options = new MeerkatOptions();
+            CommandLine.Parser parser = new Parser();
+            if (parser.ParseArguments(args, options))
+            {
+                board = options.Board;
+                player = options.Player;
+                timeMillis = options.Time;
+            }
+
             log.Info("Meerkat Started");
+            log.Debug("Board: " + board);
+            log.Debug("Player: " + player);
+            log.Debug("Time: " + timeMillis);
 
             //Calls timeOutHandler after 9.5 seconds
             Timer time = new Timer();
             time.Elapsed += new ElapsedEventHandler(timeOutHandler);
             time.Interval = (10*1000)-500;
             time.Enabled = true; //start timer
-            log.Debug("Received arguments:");
-            foreach (var arg in args) {
-                log.Debug(arg);
-            }
             
             Console.Read(); //exit on input
 
@@ -49,5 +62,17 @@ namespace MeerkatAI
             }
         }
         
+    }
+
+    class MeerkatOptions
+    {
+        [Option('b', null, Required = true, HelpText = "Board input")]
+        public string Board { get; set; }
+
+        [Option('p', null, Required = true, HelpText = "Player input")]
+        public string Player { get; set; }
+
+        [Option('t', null, Required = true, HelpText = "Board input")]
+        public int Time { get; set; }
     }
 }
