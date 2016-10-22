@@ -9,15 +9,27 @@ namespace MeerkatAI
 {
     class MeerkatAI
     {
+        private static readonly log4net.ILog log =
+    log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+
         static void Main(string[] args)
         {
+            log.Info("Meerkat Started");
+
             //Calls timeOutHandler after 9.5 seconds
             Timer time = new Timer();
             time.Elapsed += new ElapsedEventHandler(timeOutHandler);
             time.Interval = (10*1000)-500;
             time.Enabled = true; //start timer
-
+            log.Debug("Received arguments:");
+            foreach (var arg in args) {
+                log.Debug(arg);
+            }
+            
             Console.Read(); //exit on input
+
+            log.Info("Meerkat completed with result 0");
         }
 
         private static void timeOutHandler(object sender, ElapsedEventArgs e)
