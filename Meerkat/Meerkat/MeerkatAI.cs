@@ -68,6 +68,7 @@ namespace MeerkatAI
             } catch (Exception e)
             {
                 log.Error(e);
+                returnMove(0);
             }
         }
 
@@ -81,7 +82,7 @@ namespace MeerkatAI
             // If we are the first player and this is the first board, choose column 3
             if(board.IsEmpty())
             {
-                Environment.Exit(3);
+                returnMove(3);
             }
 
             // Choose a random available move
@@ -107,8 +108,13 @@ namespace MeerkatAI
                 }
             }
 
-            log.Info("Meerkat chose move: " + this.bestMove);
-            Environment.Exit(this.bestMove);
+            returnMove(this.bestMove);
+        }
+
+        private static void returnMove(int move)
+        {
+            log.Info("Meerkat chose move: " + move);
+            Environment.Exit(move);
         }
 
         // Random player useful for testing.
@@ -135,6 +141,12 @@ namespace MeerkatAI
         // Inspired by a pseudocode example of min-max on Wikipedia: https://en.wikipedia.org/wiki/Minimax
         private static int minMax(Board board, int depth, bool isMax)
         {
+            // If the board is null, evaluate this node as default.
+            if(board == null)
+            {
+                return isMax ? -INFINITY : INFINITY;
+            }
+
             // If the remaining depth is 0, evaluate this board
             if (depth == 0) {
                 return board.Heuristic();
@@ -173,8 +185,8 @@ namespace MeerkatAI
             {
                 if (meerkatPlayer.bestMove != -1)
                 {
-                    log.Info("Timer interrupted player: Chose " + meerkatPlayer.bestMove);
-                    Environment.Exit(meerkatPlayer.bestMove);
+                    log.Info("Timer interrupted player.");
+                    returnMove(meerkatPlayer.bestMove);
                 }
 
 
@@ -186,8 +198,8 @@ namespace MeerkatAI
                     nextMove = chooseRandomMove(board);
                 }
 
-                log.Info("Time expired: Chose " + nextMove);
-                Environment.Exit(nextMove);
+                log.Info("Time expired.");
+                returnMove(nextMove);
             };
         }
 

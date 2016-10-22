@@ -9,14 +9,13 @@ namespace MeerkatAI
 {
     class Board
     {
-        private static readonly log4net.ILog log =
-    log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private int[,] myBoard;
         public Board(string board, int player)
         {
             try
             {
-                myBoard = JsonConvert.DeserializeObject<int[,]>(board);
+                this.myBoard = JsonConvert.DeserializeObject<int[,]>(board);
                 log.Debug(myBoard.ToString());
                 log.Debug("Parsed board successfully");
             }
@@ -24,21 +23,27 @@ namespace MeerkatAI
             {
                 log.Error(e);
             }
-
-            
         }
 
         public int[] ValidMoves()
         {
-            var list = new List<int>();
-            for (int i = 0; i < 7; i++)
+            try
             {
-                if (myBoard[0, i] == 0)
+                var list = new List<int>();
+                for (int i = 0; i < 7; i++)
                 {
-                    list.Add(i);
+                    if (myBoard[0, i] == 0)
+                    {
+                        list.Add(i);
+                    }
                 }
+                return list.ToArray();
+            } catch(Exception e)
+            {
+                // Log exception
+                log.Error("Caught exception in ValidMoves(): ", e);
+                return null;
             }
-            return list.ToArray();
         }
 
         public int Heuristic()
