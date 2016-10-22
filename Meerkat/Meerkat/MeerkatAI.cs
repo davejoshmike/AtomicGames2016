@@ -128,7 +128,7 @@ namespace MeerkatAI
             if (moves != null && moves.Length > 0)
             {
                 Random rand = new Random();
-                return rand.Next(0, moves.Length);
+                return moves[rand.Next(0, moves.Length)];
             }
             else
             {

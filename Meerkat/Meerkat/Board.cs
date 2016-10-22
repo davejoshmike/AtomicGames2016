@@ -11,11 +11,13 @@ namespace MeerkatAI
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private int[,] myBoard;
+        private int player;
         private int TOP = 0;
         private int BOTTOM = 5;
 
         public Board(string board, int player)
         {
+            this.player = player;
             try
             {
                 this.myBoard = JsonConvert.DeserializeObject<int[,]>(board);
@@ -26,6 +28,12 @@ namespace MeerkatAI
             {
                 log.Error(e);
             }
+        }
+        // Copy constructor
+        public Board(int[,] board, int player)
+        {
+            this.myBoard = board;
+            this.player = player;
         }
 
         public int[] ValidMoves()
@@ -79,8 +87,34 @@ namespace MeerkatAI
 
         public Board Move(int column)
         {
+            int[,] newBoard = new int[6 , 7];
+            // Copy array
+            for(int x = 0; x < 7; x++)
+            {
+                for(int y = 0; y < 6; y++)
+                {
+                    newBoard[y, x] = this.myBoard[y, x];
+                }
+            }
 
-            return null;
+
+            for (int i = 1; i < BOTTOM; i++)
+            {
+                    try
+                    {
+                        if (newBoard[i, column] != 0)
+                        {
+                            newBoard[i - 1, column] = this.player;
+                        }   
+                    }
+                catch (IndexOutOfRangeException e)
+                {
+                    log.Error("Index: " + i);
+                    log.Error("Caught IndexOutOfRangeException: " + e);
+                }
+            }
+            
+            return new Board(this.myBoard, this.player == 1 ? 1 : 2);
         }
 
         private bool DiagonalGoal()
