@@ -23,6 +23,11 @@ namespace MeerkatAI
             return -1;
         }
 
+        public int NumPieces()
+        {
+            return -1;
+        }
+
         public bool IsGoal()
         {
             return false;
