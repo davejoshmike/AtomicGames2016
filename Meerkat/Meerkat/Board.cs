@@ -11,6 +11,9 @@ namespace MeerkatAI
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private int[,] myBoard;
+        private int TOP = 0;
+        private int BOTTOM = 5;
+
         public Board(string board, int player)
         {
             try
@@ -64,16 +67,25 @@ namespace MeerkatAI
 
         public bool IsEmpty()
         {
-            return false;
+            for (int i = 0; i < 7; i++)
+            {
+                if (myBoard[BOTTOM, i] != 0)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         public Board Move(int column)
         {
+
             return null;
         }
 
         private bool DiagonalGoal()
         {
+            
             return false;
         }
     }
