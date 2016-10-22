@@ -15,7 +15,7 @@ namespace MeerkatAI
     log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         [Option('b', null, Required = true, HelpText = "Board input")]
-        public string Board { get; set; }
+        public string BoardString { get; set; }
 
         [Option('p', null, Required = true, HelpText = "Player input")]
         public string Player { get; set; }
@@ -63,13 +63,27 @@ namespace MeerkatAI
         // Selects a move on the current board
         private void move()
         {
-            this.nextMove = 0;
+            Board board = new Board(BoardString);
+
+            int[] moves = board.ValidMoves();
+
+            if (moves.Length > 0)
+            {
+                this.nextMove = moves[0];
+            }
+            else
+            {
+                log.Warn("No valid moves!");
+                this.nextMove = 0;
+            }
             log.Info("Meerkat chose move: " + this.nextMove);
             Environment.Exit(this.nextMove);
         }
 
+        // Delegate type for timer callback function
         private delegate void timeOutHandler(object sender, ElapsedEventArgs e);
 
+        // Generator function returns a closure containing the player to execute on timeout
         private static timeOutHandler makeTimeOutHandler(MeerkatAI meerkatPlayer)
         {
             return delegate (object sender, ElapsedEventArgs e)
@@ -94,6 +108,7 @@ namespace MeerkatAI
                 }
 
                 log.Info("Time expired.");
+                Environment.Exit(0);
             };
         }
 
