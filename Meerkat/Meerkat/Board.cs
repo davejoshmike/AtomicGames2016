@@ -170,10 +170,52 @@ namespace MeerkatAI
             }
         }
 
-        private bool VerticalGoal()
+        private void VerticalGoal(int x, int y, int whichPlayer)
         {
+            int ycoord = y;
+            int pieceCount = 1;
+            //down
+            while (ycoord > 0)
+            {
 
-            return false;
+                ycoord--;
+                if (myBoard[ycoord, x] == whichPlayer)
+                {
+                    pieceCount++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            //down
+            while (ycoord < 7)
+            {
+                ycoord++;
+                if (myBoard[ycoord, x] == whichPlayer)
+                {
+                    pieceCount++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (pieceCount == 3)
+            {
+                if (whichPlayer == 1)
+                    p1threes++;
+                if (whichPlayer == 2)
+                    p2threes++;
+            }
+            if (pieceCount == 4)
+            {
+                if (whichPlayer == 1)
+                    p1fours++;
+                if (whichPlayer == 2)
+                    p2fours++;
+            }
         }
     }
 }
