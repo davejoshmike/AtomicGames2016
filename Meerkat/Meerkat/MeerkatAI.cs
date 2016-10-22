@@ -64,20 +64,39 @@ namespace MeerkatAI
         private void move()
         {
             Board board = new Board(BoardString);
+            
+            // Special case
+            // If we are the first player and this is the first board, choose column 3
+            if(board.IsEmpty())
+            {
+                Environment.Exit(3);
+            }
 
+            // Choose a random available move
+            this.nextMove = chooseRandomMove(board);
+
+            log.Info("Meerkat chose move: " + this.nextMove);
+            Environment.Exit(this.nextMove);
+        }
+
+        // Random player useful for testing.
+        // Selects a random valid move given a board.
+        // If no valid moves are available, returns 0
+        private static int chooseRandomMove(Board board)
+        {
+            // Get the valid moves from the board
             int[] moves = board.ValidMoves();
 
-            if (moves.Length > 0)
+            if (moves != null && moves.Length > 0)
             {
-                this.nextMove = moves[0];
+                Random rand = new Random();
+                return rand.Next(0, moves.Length);
             }
             else
             {
                 log.Warn("No valid moves!");
-                this.nextMove = 0;
+                return 0;
             }
-            log.Info("Meerkat chose move: " + this.nextMove);
-            Environment.Exit(this.nextMove);
         }
 
         // Delegate type for timer callback function
@@ -93,22 +112,17 @@ namespace MeerkatAI
                     Environment.Exit(meerkatPlayer.nextMove);
                 }
 
-                //TODO Implement logic that chooses a move at timeout
-                Console.WriteLine("Hello World!");
-                Random rand = new Random();
 
-                switch (rand.Next(0, 11))
+                int nextMove = 0;
+
+                if(meerkatPlayer != null)
                 {
-                    case 0:
-                    case 1:
-                    case 2:
-                        break;
-                    default:
-                        break;
+                    var board = new Board(meerkatPlayer.BoardString);
+                    nextMove = chooseRandomMove(board);
                 }
 
                 log.Info("Time expired.");
-                Environment.Exit(0);
+                Environment.Exit(nextMove);
             };
         }
 
