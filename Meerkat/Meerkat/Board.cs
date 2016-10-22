@@ -86,13 +86,17 @@ namespace MeerkatAI
                         //Found a piece!
                         HorizontalGoal(x, y - 1, 1);
                         HorizontalGoal(x, y - 1, 2);
-                        //VerticalGoal(x, y);
+                        VerticalGoal(x, y - 1, 1);
+                        VerticalGoal(x, y - 1, 2);
                     }
                 }
             }
-            score += (p1twos - p2twos);
-            score += (p1threes - p2threes) * 10;
-            score += (p1fours - p2fours)*100;
+            Random rand = new Random();
+            score += rand.Next(0, 50);
+
+            score += (p1twos - p2twos) * 10;
+            score += (p1threes - p2threes) * 100;
+            score += (p1fours - p2fours)*1000;
             //score needs to negative if player 2
             if(player==2)
                 score *= -1;
@@ -106,7 +110,7 @@ namespace MeerkatAI
 
         public bool IsGoal()
         {
-            return Heuristic() > 99;
+            return Heuristic() > 499;
         }
 
         public bool IsEmpty()
@@ -222,10 +226,81 @@ namespace MeerkatAI
             }
         }
 
-        private bool VerticalGoal()
+        private void VerticalGoal(int x, int y, int whichPlayer)
+
         {
 
-            return false;
+            int ycoord = y;
+
+            int pieceCount = 0;
+
+            //down
+
+            while (ycoord > 6)
+
+            {
+                ycoord++;
+
+                if (myBoard[ycoord, x] == whichPlayer)
+
+                {
+
+                    pieceCount++;
+
+                }
+
+                else
+
+                {
+
+                    break;
+
+                }
+
+            }
+
+            if (pieceCount == 2)
+
+            {
+
+                if (whichPlayer == 1)
+
+                    p1twos++;
+
+                if (whichPlayer == 2)
+
+                    p2twos++;
+
+            }
+
+            if (pieceCount == 3)
+
+            {
+
+                if (whichPlayer == 1)
+
+                    p1threes++;
+
+                if (whichPlayer == 2)
+
+                    p2threes++;
+
+            }
+
+            if (pieceCount > 3)
+
+            {
+
+                if (whichPlayer == 1)
+
+                    p1fours++;
+
+                if (whichPlayer == 2)
+
+                    p2fours++;
+
+            }
+
         }
     }
 }

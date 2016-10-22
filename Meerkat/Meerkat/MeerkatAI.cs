@@ -27,7 +27,7 @@ namespace MeerkatAI
         const int INFINITY = 999999;
 
         // Fixed depth of 5
-        const int DEPTH = 5;
+        const int DEPTH = 4;
 
         private int bestMove;
 
