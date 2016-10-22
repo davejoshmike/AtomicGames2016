@@ -23,11 +23,17 @@ namespace MeerkatAI
         [Option('t', null, Required = true, HelpText = "Board input")]
         public int Time { get; set; }
 
-        private int nextMove;
+        // Infinity can be represented as a very large number
+        const int INFINITY = 999999;
+
+        // Fixed depth of 5
+        const int DEPTH = 5;
+
+        private int bestMove;
 
         public MeerkatAI()
         {
-            nextMove = -1;
+            bestMove = -1;
             log.Debug("Instantiated MeerkatAI");
         }
 
@@ -63,7 +69,7 @@ namespace MeerkatAI
         // Selects a move on the current board
         private void move()
         {
-            Board board = new Board(BoardString);
+            Board board = new Board(this.BoardString, this.Player == "player-one" ? 1: 2);
             
             // Special case
             // If we are the first player and this is the first board, choose column 3
@@ -73,10 +79,20 @@ namespace MeerkatAI
             }
 
             // Choose a random available move
-            this.nextMove = chooseRandomMove(board);
+            this.bestMove = chooseRandomMove(board);
 
-            log.Info("Meerkat chose move: " + this.nextMove);
-            Environment.Exit(this.nextMove);
+            // Look at each possible move
+            var validMoves = board.ValidMoves();
+            foreach(int move in validMoves)
+            {
+                // Min max evaluation
+                var newBoard = board.Move(move);
+                int value = minMax(newBoard, DEPTH, true); // Should we always start as max, or is that dependent on which player is up?
+                this.bestMove = Math.Max(this.bestMove, value);
+            }
+
+            log.Info("Meerkat chose move: " + this.bestMove);
+            Environment.Exit(this.bestMove);
         }
 
         // Random player useful for testing.
@@ -99,6 +115,35 @@ namespace MeerkatAI
             }
         }
 
+        // Recursive minimax evaluation of a board
+        // Inspired by a pseudocode example of min-max on Wikipedia: https://en.wikipedia.org/wiki/Minimax
+        private static int minMax(Board board, int depth, bool isMax)
+        {
+            // If the remaining depth is 0, evaluate this board
+            if (depth == 0) {
+                return board.Heuristic();
+            }
+
+            // If this is the maximzing player, initialize the best value to negative infinity.
+            // If this is the minimizing player, initialize the best value to infinity.
+            int bestValue = isMax ? -INFINITY: INFINITY;
+            int[] validMoves = board.ValidMoves();
+
+            // Look at each possible move
+            foreach(int move in validMoves)
+            {
+                // Get the board created by this move
+                var newBoard = board.Move(move);
+                // Recursively perform minimax on this board
+                int value = minMax(newBoard, depth - 1, !isMax);
+                // Update the best value if this board is better / worse
+                bestValue = isMax ? Math.Max(value, bestValue) : Math.Min(value, bestValue);
+            }
+
+            return bestValue;
+        }
+
+
         // Delegate type for timer callback function
         private delegate void timeOutHandler(object sender, ElapsedEventArgs e);
 
@@ -107,9 +152,9 @@ namespace MeerkatAI
         {
             return delegate (object sender, ElapsedEventArgs e)
             {
-                if (meerkatPlayer.nextMove != -1)
+                if (meerkatPlayer.bestMove != -1)
                 {
-                    Environment.Exit(meerkatPlayer.nextMove);
+                    Environment.Exit(meerkatPlayer.bestMove);
                 }
 
 
@@ -117,7 +162,7 @@ namespace MeerkatAI
 
                 if(meerkatPlayer != null)
                 {
-                    var board = new Board(meerkatPlayer.BoardString);
+                    var board = new Board(meerkatPlayer.BoardString, meerkatPlayer.Player == "player-one" ? 1 : 2);
                     nextMove = chooseRandomMove(board);
                 }
 

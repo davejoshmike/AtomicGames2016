@@ -8,7 +8,7 @@ namespace MeerkatAI
 {
     class Board
     {
-        public Board(string board)
+        public Board(string board, int player)
         {
 
         }
