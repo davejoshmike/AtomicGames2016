@@ -62,7 +62,13 @@ namespace MeerkatAI
             log.Info("Timer started with " + (meerkatPlayer.Time - 500));
 
             // Select a move
-            meerkatPlayer.move();
+            try
+            {
+                meerkatPlayer.move();
+            } catch (Exception e)
+            {
+                log.Error(e);
+            }
         }
 
         // Main game logic
@@ -81,14 +87,24 @@ namespace MeerkatAI
             // Choose a random available move
             this.bestMove = chooseRandomMove(board);
 
+            // Initialize best value to negative infinity
+            int bestValue = -INFINITY;
+
             // Look at each possible move
             var validMoves = board.ValidMoves();
-            foreach(int move in validMoves)
+            if (validMoves != null)
             {
-                // Min max evaluation
-                var newBoard = board.Move(move);
-                int value = minMax(newBoard, DEPTH, true); // Should we always start as max, or is that dependent on which player is up?
-                this.bestMove = Math.Max(this.bestMove, value);
+                foreach (int move in validMoves)
+                {
+                    // Min max evaluation
+                    var newBoard = board.Move(move);
+                    int value = minMax(newBoard, DEPTH, true);
+                    if (value > bestValue)
+                    {
+                        bestValue = value;
+                        this.bestMove = move;
+                    }
+                }
             }
 
             log.Info("Meerkat chose move: " + this.bestMove);
@@ -134,10 +150,13 @@ namespace MeerkatAI
             {
                 // Get the board created by this move
                 var newBoard = board.Move(move);
-                // Recursively perform minimax on this board
-                int value = minMax(newBoard, depth - 1, !isMax);
-                // Update the best value if this board is better / worse
-                bestValue = isMax ? Math.Max(value, bestValue) : Math.Min(value, bestValue);
+                if (newBoard != null)
+                {
+                    // Recursively perform minimax on this board
+                    int value = minMax(newBoard, depth - 1, !isMax);
+                    // Update the best value if this board is better / worse
+                    bestValue = isMax ? Math.Max(value, bestValue) : Math.Min(value, bestValue);
+                }
             }
 
             return bestValue;
@@ -154,6 +173,7 @@ namespace MeerkatAI
             {
                 if (meerkatPlayer.bestMove != -1)
                 {
+                    log.Info("Timer interrupted player: Chose " + meerkatPlayer.bestMove);
                     Environment.Exit(meerkatPlayer.bestMove);
                 }
 
@@ -166,7 +186,7 @@ namespace MeerkatAI
                     nextMove = chooseRandomMove(board);
                 }
 
-                log.Info("Time expired.");
+                log.Info("Time expired: Chose " + nextMove);
                 Environment.Exit(nextMove);
             };
         }
