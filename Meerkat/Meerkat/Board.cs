@@ -28,6 +28,11 @@ namespace MeerkatAI
             return false;
         }
 
+        public bool IsEmpty()
+        {
+            return false;
+        }
+
         public Board Move(int column)
         {
             return null;
