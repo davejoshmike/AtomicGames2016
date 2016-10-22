@@ -12,8 +12,16 @@ namespace MeerkatAI
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private int[,] myBoard;
         private int player;
+        private int p1twos;
+        private int p2twos;
+        private int p1threes;
+        private int p1fours;
+        private int p2threes;
+        private int p2fours;
         private int TOP = 0;
         private int BOTTOM = 5;
+        private int NUM_OF_ROWS = 6;
+        private int NUM_OF_COLUMNS = 7;
 
         public Board(string board, int player)
         {
@@ -34,6 +42,9 @@ namespace MeerkatAI
         {
             this.myBoard = board;
             this.player = player;
+            this.player = player;
+
+            
         }
 
         public int[] ValidMoves()
@@ -59,8 +70,33 @@ namespace MeerkatAI
 
         public int Heuristic()
         {
-            //Defense has a higher heuristic
-            return -1;
+            var score = 0;
+            p1threes = 0;
+            p1fours = 0;
+            p2threes = 0;
+            p2fours = 0;
+            p1twos = 0;
+            p2twos = 0;
+            for (int x = 0; x < NUM_OF_COLUMNS; x++)
+            {
+                for (int y = 0; y < NUM_OF_ROWS; y++)
+                {
+                    if (myBoard[y, x] != 0 && y > 0)
+                    {
+                        //Found a piece!
+                        HorizontalGoal(x, y - 1, 1);
+                        HorizontalGoal(x, y - 1, 2);
+                        //VerticalGoal(x, y);
+                    }
+                }
+            }
+            score += (p1twos - p2twos);
+            score += (p1threes - p2threes) * 10;
+            score += (p1fours - p2fours)*100;
+            //score needs to negative if player 2
+            if(player==2)
+                score *= -1;
+            return score;
         }
 
         public int NumPieces()
@@ -70,12 +106,12 @@ namespace MeerkatAI
 
         public bool IsGoal()
         {
-            return false;
+            return Heuristic() > 99;
         }
 
         public bool IsEmpty()
         {
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < NUM_OF_COLUMNS; i++)
             {
                 if (myBoard[BOTTOM, i] != 0)
                 {
@@ -114,12 +150,81 @@ namespace MeerkatAI
                 }
             }
             
-            return new Board(this.myBoard, this.player == 1 ? 1 : 2);
+            return new Board(newBoard, this.player == 1 ? 2 : 1);
         }
 
         private bool DiagonalGoal()
         {
             
+            return false;
+        }
+
+        private void HorizontalGoal(int x, int y, int whichPlayer)
+        {
+            try
+            {
+                int xcoord = x;
+                int pieceCount = 1;
+                //left
+                while (xcoord > 0)
+                {
+
+                    xcoord--;
+                    if (myBoard[y, xcoord] == whichPlayer)
+                    {
+                        pieceCount++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                xcoord = x;
+
+                //right
+                while (xcoord < 6)
+                {
+                    xcoord++;
+                    if (myBoard[y, xcoord] == whichPlayer)
+                    {
+                        pieceCount++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                if (pieceCount == 2)
+                {
+                    if (whichPlayer == 1)
+                        p1twos++;
+                    if (whichPlayer == 2)
+                        p2twos++;
+                }
+                if (pieceCount == 3)
+                {
+                    if (whichPlayer == 1)
+                        p1threes++;
+                    if (whichPlayer == 2)
+                        p2threes++;
+                }
+                if (pieceCount > 3)
+                {
+                    if (whichPlayer == 1)
+                        p1fours++;
+                    if (whichPlayer == 2)
+                        p2fours++;
+                }
+            } catch (IndexOutOfRangeException e)
+            {
+                log.Error("Caught exception in HorizontalGoal: ", e);
+            }
+        }
+
+        private bool VerticalGoal()
+        {
+
             return false;
         }
     }

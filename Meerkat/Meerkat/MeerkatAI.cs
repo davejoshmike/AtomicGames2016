@@ -57,9 +57,9 @@ namespace MeerkatAI
             Timer time = new Timer();
             // The callback function in the timer is a closure that contains the player
             time.Elapsed += new ElapsedEventHandler(makeTimeOutHandler(meerkatPlayer));
-            time.Interval = meerkatPlayer.Time - 500;
+            time.Interval = meerkatPlayer.Time * 0.85;
             time.Enabled = true; //start timer
-            log.Info("Timer started with " + (meerkatPlayer.Time - 500));
+            log.Info("Timer started with " + (time.Interval));
 
             // Select a move
             try
@@ -76,7 +76,7 @@ namespace MeerkatAI
         // Selects a move on the current board
         private void move()
         {
-            Board board = new Board(this.BoardString, this.Player == "player-one" ? 1: 2);
+            Board board = new Board(this.BoardString, this.Player == "player-one" ? 2: 1); // Start on opposing team - next board is your move
             
             // Special case
             // If we are the first player and this is the first board, choose column 3
@@ -99,11 +99,16 @@ namespace MeerkatAI
                 {
                     // Min max evaluation
                     var newBoard = board.Move(move);
+                    if (newBoard.IsGoal()){
+                        log.Debug("Meerkat selected a greedy move");
+                        returnMove(move);
+                    }
                     int value = minMax(newBoard, DEPTH, true);
                     if (value > bestValue)
                     {
                         bestValue = value;
                         this.bestMove = move;
+                        log.Debug("Meerkat updated the best move to " + move + " with a score of " + value);
                     }
                 }
             }
