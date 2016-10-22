@@ -27,7 +27,7 @@ namespace MeerkatAI
         const int INFINITY = 999999;
 
         // Fixed depth of 5
-        const int DEPTH = 5;
+        const int DEPTH = 4;
 
         private int bestMove;
 
@@ -57,9 +57,9 @@ namespace MeerkatAI
             Timer time = new Timer();
             // The callback function in the timer is a closure that contains the player
             time.Elapsed += new ElapsedEventHandler(makeTimeOutHandler(meerkatPlayer));
-            time.Interval = meerkatPlayer.Time - 500;
+            time.Interval = meerkatPlayer.Time * 0.85;
             time.Enabled = true; //start timer
-            log.Info("Timer started with " + (meerkatPlayer.Time - 500));
+            log.Info("Timer started with " + (time.Interval));
 
             // Select a move
             try
@@ -68,6 +68,7 @@ namespace MeerkatAI
             } catch (Exception e)
             {
                 log.Error(e);
+                returnMove(0);
             }
         }
 
@@ -75,13 +76,13 @@ namespace MeerkatAI
         // Selects a move on the current board
         private void move()
         {
-            Board board = new Board(this.BoardString, this.Player == "player-one" ? 1: 2);
+            Board board = new Board(this.BoardString, this.Player == "player-one" ? 2: 1); // Start on opposing team - next board is your move
             
             // Special case
             // If we are the first player and this is the first board, choose column 3
             if(board.IsEmpty())
             {
-                Environment.Exit(3);
+                returnMove(3);
             }
 
             // Choose a random available move
@@ -98,17 +99,27 @@ namespace MeerkatAI
                 {
                     // Min max evaluation
                     var newBoard = board.Move(move);
+                    if (newBoard.IsGoal()){
+                        log.Debug("Meerkat selected a greedy move");
+                        returnMove(move);
+                    }
                     int value = minMax(newBoard, DEPTH, true);
                     if (value > bestValue)
                     {
                         bestValue = value;
                         this.bestMove = move;
+                        log.Debug("Meerkat updated the best move to " + move + " with a score of " + value);
                     }
                 }
             }
 
-            log.Info("Meerkat chose move: " + this.bestMove);
-            Environment.Exit(this.bestMove);
+            returnMove(this.bestMove);
+        }
+
+        private static void returnMove(int move)
+        {
+            log.Info("Meerkat chose move: " + move);
+            Environment.Exit(move);
         }
 
         // Random player useful for testing.
@@ -122,7 +133,7 @@ namespace MeerkatAI
             if (moves != null && moves.Length > 0)
             {
                 Random rand = new Random();
-                return rand.Next(0, moves.Length);
+                return moves[rand.Next(0, moves.Length)];
             }
             else
             {
@@ -135,6 +146,12 @@ namespace MeerkatAI
         // Inspired by a pseudocode example of min-max on Wikipedia: https://en.wikipedia.org/wiki/Minimax
         private static int minMax(Board board, int depth, bool isMax)
         {
+            // If the board is null, evaluate this node as default.
+            if(board == null)
+            {
+                return isMax ? -INFINITY : INFINITY;
+            }
+
             // If the remaining depth is 0, evaluate this board
             if (depth == 0) {
                 return board.Heuristic();
@@ -162,7 +179,6 @@ namespace MeerkatAI
             return bestValue;
         }
 
-
         // Delegate type for timer callback function
         private delegate void timeOutHandler(object sender, ElapsedEventArgs e);
 
@@ -173,8 +189,8 @@ namespace MeerkatAI
             {
                 if (meerkatPlayer.bestMove != -1)
                 {
-                    log.Info("Timer interrupted player: Chose " + meerkatPlayer.bestMove);
-                    Environment.Exit(meerkatPlayer.bestMove);
+                    log.Info("Timer interrupted player.");
+                    returnMove(meerkatPlayer.bestMove);
                 }
 
 
@@ -186,12 +202,9 @@ namespace MeerkatAI
                     nextMove = chooseRandomMove(board);
                 }
 
-                log.Info("Time expired: Chose " + nextMove);
-                Environment.Exit(nextMove);
+                log.Info("Time expired.");
+                returnMove(nextMove);
             };
-        }
-
-        
+        }        
     }
-
 }
