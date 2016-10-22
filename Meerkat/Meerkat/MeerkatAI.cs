@@ -14,58 +14,6 @@ namespace MeerkatAI
         private static readonly log4net.ILog log =
     log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        static void Main(string[] args)
-        {
-            String board = "";
-            String player = "";
-            int timeMillis = 0;
-
-            var options = new MeerkatOptions();
-            CommandLine.Parser parser = new Parser();
-            if (parser.ParseArguments(args, options))
-            {
-                board = options.Board;
-                player = options.Player;
-                timeMillis = options.Time;
-            }
-
-            log.Info("Meerkat Started");
-            log.Debug("Board: " + board);
-            log.Debug("Player: " + player);
-            log.Debug("Time: " + timeMillis);
-
-            //Calls timeOutHandler after 9.5 seconds
-            Timer time = new Timer();
-            time.Elapsed += new ElapsedEventHandler(timeOutHandler);
-            time.Interval = (10*1000)-500;
-            time.Enabled = true; //start timer
-            
-            Console.Read(); //exit on input
-
-            log.Info("Meerkat completed with result 0");
-        }
-
-        private static void timeOutHandler(object sender, ElapsedEventArgs e)
-        {
-            //TODO Implement logic that chooses a move at timeout
-            Console.WriteLine("Hello World!");
-            Random rand = new Random();
-
-            switch (rand.Next(0,11))
-            {
-                case 0:
-                case 1:
-                case 2:
-                    break;
-                default:
-                    break;
-            }
-        }
-        
-    }
-
-    class MeerkatOptions
-    {
         [Option('b', null, Required = true, HelpText = "Board input")]
         public string Board { get; set; }
 
@@ -74,5 +22,82 @@ namespace MeerkatAI
 
         [Option('t', null, Required = true, HelpText = "Board input")]
         public int Time { get; set; }
+
+        private int nextMove;
+
+        public MeerkatAI()
+        {
+            nextMove = -1;
+            log.Debug("Instantiated MeerkatAI");
+        }
+
+        static void Main(string[] args)
+        {
+            log.Info("MeerkatAI started");
+
+            //var options = new MeerkatOptions();
+            CommandLine.Parser parser = new Parser();
+
+            // Instantiate our AI
+            // Command line arguments will be passed in as properties through parser.ParseArguments
+            MeerkatAI meerkatPlayer = new MeerkatAI();
+
+            if(!parser.ParseArguments(args, meerkatPlayer))
+            {
+                log.Error("Command line arguments could not be parsed");
+            }
+
+            //Calls timeOutHandler half a second before the time expires
+            Timer time = new Timer();
+            // The callback function in the timer is a closure that contains the player
+            time.Elapsed += new ElapsedEventHandler(makeTimeOutHandler(meerkatPlayer));
+            time.Interval = meerkatPlayer.Time - 500;
+            time.Enabled = true; //start timer
+            log.Info("Timer started with " + (meerkatPlayer.Time - 500));
+
+            // Select a move
+            meerkatPlayer.move();
+        }
+
+        // Main game logic
+        // Selects a move on the current board
+        private void move()
+        {
+            this.nextMove = 0;
+            log.Info("Meerkat chose move: " + this.nextMove);
+            Environment.Exit(this.nextMove);
+        }
+
+        private delegate void timeOutHandler(object sender, ElapsedEventArgs e);
+
+        private static timeOutHandler makeTimeOutHandler(MeerkatAI meerkatPlayer)
+        {
+            return delegate (object sender, ElapsedEventArgs e)
+            {
+                if (meerkatPlayer.nextMove != -1)
+                {
+                    Environment.Exit(meerkatPlayer.nextMove);
+                }
+
+                //TODO Implement logic that chooses a move at timeout
+                Console.WriteLine("Hello World!");
+                Random rand = new Random();
+
+                switch (rand.Next(0, 11))
+                {
+                    case 0:
+                    case 1:
+                    case 2:
+                        break;
+                    default:
+                        break;
+                }
+
+                log.Info("Time expired.");
+            };
+        }
+
+        
     }
+
 }
